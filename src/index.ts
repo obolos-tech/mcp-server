@@ -1582,6 +1582,60 @@ server.tool(
   },
 );
 
+// ─── Tool: check_reputation ─────────────────────────────────────────────────
+
+server.tool(
+  'check_reputation',
+  'Check trust scores for an agent from RNWY + AgentProof reputation providers. Returns combined score, tier, pass/fail, sybil flags.',
+  {
+    agent_id: z.number().describe('Agent ID (token ID or registry ID)'),
+    chain: z.string().optional().default('base').describe('Chain slug (base, ethereum, etc.)'),
+    address: z.string().optional().describe('Wallet address of the agent'),
+  },
+  async ({ agent_id, chain, address }) => {
+    try {
+      const url = new URL(`${OBOLOS_API_URL}/api/anp/reputation/${agent_id}`);
+      if (chain) url.searchParams.set('chain', chain);
+      if (address) url.searchParams.set('address', address);
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+    } catch (e: any) {
+      return { content: [{ type: 'text' as const, text: `Error: ${e.message}` }], isError: true };
+    }
+  },
+);
+
+// ─── Tool: compare_reputations ──────────────────────────────────────────────
+
+server.tool(
+  'compare_reputations',
+  'Compare trust scores of multiple agents side-by-side. Useful when choosing between bid providers.',
+  {
+    agents: z.string().describe('Comma-separated chain:id pairs, e.g. "base:123,base:456,base:789"'),
+  },
+  async ({ agents }) => {
+    try {
+      const pairs = agents.split(',').map(p => p.trim());
+      const results = await Promise.all(
+        pairs.map(async (pair) => {
+          const [chain, id] = pair.includes(':') ? pair.split(':') : ['base', pair];
+          const url = `${OBOLOS_API_URL}/api/anp/reputation/${id}?chain=${chain}`;
+          const res = await fetch(url);
+          if (!res.ok) return { agentId: id, chain, error: `HTTP ${res.status}` };
+          return await res.json();
+        }),
+      );
+      // Sort by combined score descending
+      results.sort((a: any, b: any) => (b.combined?.score ?? 0) - (a.combined?.score ?? 0));
+      return { content: [{ type: 'text' as const, text: JSON.stringify(results, null, 2) }] };
+    } catch (e: any) {
+      return { content: [{ type: 'text' as const, text: `Error: ${e.message}` }], isError: true };
+    }
+  },
+);
+
 // ─── Resources ──────────────────────────────────────────────────────────────
 
 server.resource(
