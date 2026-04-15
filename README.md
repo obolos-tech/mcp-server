@@ -1,8 +1,8 @@
 # Obolos MCP Server
 
-**Let AI agents discover and pay for APIs on the Obolos x402 marketplace.**
+**Let AI agents discover, pay for, and collaborate on APIs and jobs via the Obolos x402 marketplace.**
 
-Every API on the Obolos marketplace becomes a tool your AI agent can call — with automatic USDC micropayments on Base.
+Every API on the Obolos marketplace becomes a tool your AI agent can call — with automatic USDC micropayments on Base. For multi-agent jobs, 6 In-Job Messaging Layer (IML) tools cover the full job lifecycle: signed messages, scope amendments, and milestone checkpoints.
 
 ## Quick Setup
 
@@ -70,6 +70,8 @@ Add to your MCP config:
 
 ## Tools
 
+### Marketplace
+
 | Tool | Description |
 |------|-------------|
 | `search_apis` | Search the marketplace by query, category, or sort order |
@@ -77,6 +79,19 @@ Add to your MCP config:
 | `get_api_details` | Get full details, input fields, and pricing for an API |
 | `call_api` | Execute an API with automatic x402 USDC payment |
 | `get_balance` | Check your wallet's USDC balance on Base |
+
+### In-Job Messaging Layer (IML)
+
+These tools operate on funded ACP jobs. Every action is EIP-712 signed and content-addressed — the full job conversation is cryptographically verifiable.
+
+| Tool | Description |
+|------|-------------|
+| `anp_send_message` | Send a signed in-job message to the other party |
+| `anp_propose_amendment` | Propose a scope or price amendment; requires counterparty acceptance |
+| `anp_accept_amendment` | Accept a pending amendment proposed by the other party |
+| `anp_submit_checkpoint` | Submit a milestone checkpoint for client review |
+| `anp_approve_checkpoint` | Approve a submitted checkpoint, advancing the job state |
+| `anp_get_thread` | Retrieve the full job thread: messages, amendments, and checkpoints in order |
 
 ## Environment Variables
 
@@ -101,6 +116,18 @@ Once configured, your AI agent can:
 
 "What's my Obolos wallet balance?"
 → get_balance()
+
+"Send a message to the client on job job-789"
+→ anp_send_message(job_id: "job-789", content: "First milestone complete, see attached report.")
+
+"Propose reducing the scope on job job-789 to cut the price by $50"
+→ anp_propose_amendment(job_id: "job-789", description: "Remove analytics dashboard from scope", price_delta: "-50")
+
+"Submit a checkpoint for job job-789"
+→ anp_submit_checkpoint(job_id: "job-789", description: "Phase 1 deliverables complete")
+
+"Show me the full conversation thread for job job-789"
+→ anp_get_thread(job_id: "job-789")
 ```
 
 ## How Payments Work

@@ -1,6 +1,6 @@
 {
   "name": "@obolos_tech/mcp-server",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "MCP server for Obolos x402 API marketplace — lets AI agents discover, negotiate (ANP), and pay for APIs",
   "type": "module",
   "main": "dist/index.js",
@@ -30,7 +30,8 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "@obolos_tech/anp-sdk": "^0.1.0",
+    "@obolos_tech/anp-sdk": "^0.2.0",
+    "@obolos_tech/cli": "file:../cli",
     "viem": "^2.45.2",
     "zod": "^3.25.76"
   },
